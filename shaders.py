@@ -85,20 +85,30 @@ if __name__ == "__main__":
     speed = 0.0
     angle = 0.0
     zoom = 1.0
-    zoom_speed = 0.0
-    MAX_SPEED = 0.5
-    MAX_ZOOM_SPEED = 0.5
+    zoom_speed = 0
+    MAX_SPEED = 180.0
+    MAX_ZOOM_SPEED = 25
     MAX_ZOOM = 100.0
-    MIN_ZOOM = 0.05
+    MIN_ZOOM = 0.04
     
     if len(sys.argv)>1:
         image_name = sys.argv[1]
     else:
-        image_name = "img.png"
+        image_name = "images/img.png"
+        
+    if len(sys.argv)>2:
+        speed = float(sys.argv[2])
+    else:
+        speed = 0.0
+        
+    if speed < -180.0 or speed > 180.0:
+        speed = 0.0
+    
+    pygame.display.set_caption(f'Zoom {round(1.0/zoom,3)} rotation speed {-speed} deg zoom_speed {-zoom_speed/100.0}')
     
     img = pygame.image.load(image_name)
     
-    pygame.key.set_repeat(100)
+    pygame.key.set_repeat(150)
 
     while True:
         display.fill((0, 0, 0))
@@ -113,34 +123,35 @@ if __name__ == "__main__":
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     if speed < MAX_SPEED:
-                        speed += 0.01
+                        speed += 0.5
                 elif event.key == pygame.K_RIGHT:
                     if speed > -MAX_SPEED:
-                        speed -= 0.01
+                        speed -= 0.5
                 elif event.key == pygame.K_DOWN:
                     if zoom_speed < MAX_ZOOM_SPEED:
-                        zoom_speed += 0.01
+                        zoom_speed += 1
                 elif event.key == pygame.K_UP:
                     if zoom_speed > -MAX_ZOOM_SPEED:
-                        zoom_speed -= 0.01
+                        zoom_speed -= 1
                 elif event.key == pygame.K_SPACE:
                     speed = 0.0
-                    zoom_speed = 0.0
+                    zoom_speed = 0
+        pygame.display.set_caption(f'Zoom {1.0/zoom:.3f} rotation speed {-speed} deg zoom_speed {-zoom_speed/100.0}')
         angle += speed
     
         if zoom > MIN_ZOOM and zoom < MAX_ZOOM:
-            zoom += zoom_speed
+            zoom += zoom_speed/100.0
         if zoom <= MIN_ZOOM:
-            zoom_speed = 0.0
+            zoom_speed = 0
             zoom = MIN_ZOOM+0.1
         if zoom >= MAX_ZOOM:
-            zoom_speed = 0.0
+            zoom_speed = 0
             zoom = MAX_ZOOM-0.1
     
         frame_tex = surf_to_texture(display)
         frame_tex.use(0)
         program['tex'] = 0
-        program['angle'] = angle
+        program['angle'] = angle*(3.1415926535 / 180.0)
         program['scale'] = zoom
         render_object.render(mode=moderngl.TRIANGLE_STRIP)
     
@@ -148,5 +159,5 @@ if __name__ == "__main__":
     
         frame_tex.release()
     
-        clock.tick(60)
+        clock.tick(25)
     
